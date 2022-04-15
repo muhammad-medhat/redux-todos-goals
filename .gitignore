@@ -102,3 +102,9 @@ dist
 
 # TernJS port file
 .tern-port
+
+#my files
+store-copy.js
+solution.js
+challange.html
+jsconfig.json
