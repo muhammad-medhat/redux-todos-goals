@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        h2{text-transform: capitalize;}
+        .box{
+            border: solid 1px;
+            width: 50%;
+            margin: 1em;
+            padding: 1em;
+        }
+        /*  */
+    </style>
+    <title>Todos - Goals</title>
+</head>
+<body>
+    <h3>Vanilla JS App</h3>
+    <div class="box">
+        <h2>
+            todos
+        </h2>
+        <input id='txtTodo' type="text" placeholder="Add Todo">
+        <button id="addTodo">Add todo</button>
+        <ul id="todos">           
+        </ul>
+    </div>
+    <div class="box">
+        <h2>
+            goals
+        </h2>
+        <input id="txtGoal" type="text" placeholder="Add Goal">
+
+        <button id="addGoal">Add Goal</button>
+        <ul id="goals"></ul>
+    </div>
+    <hr> 
+    <hr> 
+    <div id="app" class="box"></div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/redux/5.0.0-alpha.0/redux.js" integrity="sha512-rrwKW9q7MLeNxl6R7SHb2DjciTUBoCFCdbTwMQWdfJ1uqT22lKR5YWdbKoRuBLFGk3XoEZ7jRwWjiCGLopwW1g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
+    <script src="https://unpkg.com/react@16.3.0-alpha.1/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@16.3.0-alpha.1/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/babel-standalone@6.15.0/babel.min.js"></script>
+    <!-- API Script -->
+    <script src="https://tylermcginnis.com/goals-todos-api/index.js"></script>
+
+
+    <!-- <script src="lib.js"></script> -->
+    <script src="store.js"></script>
+    <script type="text/babel">
+        
+        // React Cpmponents
+
+        class App extends React.Component {
+            componentDidMount = () =>{
+                const {Store} = this.props
+                //console.log(this.props)
+//
+            Promise.all([
+                API.fetchTodos(),
+                API.fetchGoals()
+            ]).then( ([todos, goals]) => {
+                Store.dispatch(recieveDataAction(todos, goals))
+            })
+
+                Store.subscribe(() => this.forceUpdate())
+            }
+            
+            render(){                    
+                
+                const {Store} = this.props
+                const {todos, goals} = Store.getState()
+
+                //console.log('app', this.props)
+                //console.log('todos', todos)
+
+                return(
+                    <div>
+                        React App 
+                        <Todos todos={todos} title={'Todos List'} store={this.props.Store}/>
+                        <Goals goals={goals} title={'Goals List'} store={this.props.Store}/>*
+                    </div>                    
+                );
+
+            }
+            
+        }
+        function  List (props){
+                console.log('list comp', props)
+                const {removeAction,toggleAction, title, items} = props
+                return(
+                    <div>
+                        <h3>{title}</h3>
+                        <ul>
+                            {items.map(d=>(
+                                <li key={d.id}  
+                                    style={{textDecoration: (d.complete)? 'line-through': 'none'}}>
+                                    <span>
+                                        {d.name}
+                                    </span>
+                                    {props.toggleAction && (
+                                        <button onClick={()=>toggleAction(d)}>done</button>
+                                    )}
+                                    
+                                    <button onClick={()=>removeAction(d)}>X</button>
+                                </li>
+                            ))}
+                        </ul>
+                    </div>
+                )                
+            }
+
+        
+        
+        class Todos extends React.Component{
+            addTodo = (e) =>{
+                e.preventDefault()
+                console.log('add todo', this.props)
+                const todo = {
+                    id: Math.random()*10,
+                    name: this.input.value, 
+                    complete: false,
+                  }
+                  console.log(todo)
+                  
+                  this.props.store.dispatch(
+                      
+                      addTodoAction(todo)
+                    )
+            }
+            removeTodo = (todo) => {
+                const {store} = this.props
+                console.log('remove todo', todo)
+
+                store.dispatch(removeTodoAction(todo.id))
+            }
+            toggleTodo = todo => {
+                //console.log('toggle todo', todo)
+
+                this.props.store.dispatch(toggleTodoAction(todo.id))
+            }
+            render(){
+                console.log('todo comp', this.props)
+                const {store, title, todos} = this.props
+                return(
+                    <div>
+                        <h2>todos </h2>
+                        <form onSubmit={this.addTodo}>
+                            <input type="text"
+                                ref={inp=>this.input = inp}
+                            />
+                            <button>Add todo</button>                            
+                        </form>
+
+                        <List 
+                            title={title}
+                            items={todos} 
+                            toggleAction={this.toggleTodo}
+                            removeAction={this.removeTodo}/>
+
+
+                    </div>
+                )
+            }
+
+        }
+        
+        class Goals extends React.Component{
+            addGoal = (e) =>{
+                //e.preventDefault()
+                console.log('add goal')
+
+                const goal = {
+                    id: Math.random()*10,
+                    name: this.input.value,
+                    complete: false,
+                  }
+                  this.props.store.dispatch(
+                    
+                    addGoalAction(goal)
+                  )
+            }
+            removeGoal = (goal) => {
+                const {store} = this.props
+                console.log('remove goal', goal)
+
+                store.dispatch(removeGoalAction(goal.id))
+            }
+
+            render(){
+                const {title, goals} = this.props
+
+                return(
+                <div>
+                    <h2>goal</h2>
+
+                            <input type="text"
+                                ref={inp=>this.input = inp}
+                            />
+                            <button onClick={this.addGoal}>Add goal</button>   
+
+                            <List 
+                            title={title}
+                            items={goals}
+                            removeAction={this.removeGoal}/>
+
+                </div>
+                )
+            }
+
+        }
+
+        ReactDOM.render(
+            <App Store={store} />, 
+            document.getElementById('app')
+        )
+
+
+    </script>
+</body>
+</html>
