@@ -59,11 +59,9 @@
         class App extends React.Component {
             componentDidMount = () =>{
                 const {Store} = this.props
-                debugger
+               // debugger
                 Store.dispatch(handleInitialData())
                 Store.subscribe(() => this.forceUpdate())
-
-
             }
             
             render(){                    
