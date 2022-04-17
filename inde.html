@@ -17,7 +17,7 @@
     <title>Todos - Goals</title>
 </head>
 <body>
-    <h3>Vanilla JS App</h3>
+    <!-- <h3>Vanilla JS App</h3>
     <div class="box">
         <h2>
             todos
@@ -35,7 +35,7 @@
 
         <button id="addGoal">Add Goal</button>
         <ul id="goals"></ul>
-    </div>
+    </div> -->
     <hr> 
     <hr> 
     <div id="app" class="box"></div>
@@ -44,6 +44,8 @@
     <script src="https://unpkg.com/react@16.3.0-alpha.1/umd/react.development.js"></script>
     <script src="https://unpkg.com/react-dom@16.3.0-alpha.1/umd/react-dom.development.js"></script>
     <script src="https://unpkg.com/babel-standalone@6.15.0/babel.min.js"></script>
+    <script src="https://unpkg.com/redux-thunk@2.2.0/dist/redux-thunk.min.js"></script>
+
     <!-- API Script -->
     <script src="https://tylermcginnis.com/goals-todos-api/index.js"></script>
 
@@ -57,31 +59,29 @@
         class App extends React.Component {
             componentDidMount = () =>{
                 const {Store} = this.props
-                //console.log(this.props)
-//
-            Promise.all([
-                API.fetchTodos(),
-                API.fetchGoals()
-            ]).then( ([todos, goals]) => {
-                Store.dispatch(recieveDataAction(todos, goals))
-            })
-
+                debugger
+                Store.dispatch(handleInitialData())
                 Store.subscribe(() => this.forceUpdate())
+
+
             }
             
             render(){                    
                 
                 const {Store} = this.props
-                const {todos, goals} = Store.getState()
+                const {todos, goals, loading} = Store.getState()
 
-                //console.log('app', this.props)
-                //console.log('todos', todos)
-
+                //console.log('app ', this.props)
+                //console.log('loading', loading)
+                { /*return loading && (<h2>Loading...</h2>)*/}
+                if(loading === true){
+                    return <h2>Loading...</h2>
+                }
                 return(
                     <div>
-                        React App 
+                        <h3>React App </h3>
                         <Todos todos={todos} title={'Todos List'} store={this.props.Store}/>
-                        <Goals goals={goals} title={'Goals List'} store={this.props.Store}/>*
+                        <Goals goals={goals} title={'Goals List'} store={this.props.Store}/>
                     </div>                    
                 );
 
@@ -89,7 +89,7 @@
             
         }
         function  List (props){
-                console.log('list comp', props)
+                //console.log('list comp', props)
                 const {removeAction,toggleAction, title, items} = props
                 return(
                     <div>
@@ -99,6 +99,7 @@
                                 <li key={d.id}  
                                     style={{textDecoration: (d.complete)? 'line-through': 'none'}}>
                                     <span>
+                                        ({d.id})   
                                         {d.name}
                                     </span>
                                     {props.toggleAction && (
@@ -112,38 +113,24 @@
                     </div>
                 )                
             }
-
-        
         
         class Todos extends React.Component{
             addTodo = (e) =>{
-                e.preventDefault()
-                console.log('add todo', this.props)
-                const todo = {
-                    id: Math.random()*10,
-                    name: this.input.value, 
-                    complete: false,
-                  }
-                  console.log(todo)
-                  
-                  this.props.store.dispatch(
-                      
-                      addTodoAction(todo)
-                    )
+                e.preventDefault()            
+                this.props.store.dispatch( handleAddTodo(
+                        this.input.value, 
+                        () => this.input.value=''
+                    
+                    ))
             }
             removeTodo = (todo) => {
-                const {store} = this.props
-                console.log('remove todo', todo)
-
-                store.dispatch(removeTodoAction(todo.id))
+                this.props.store.dispatch(handleDeleteTodo(todo))
             }
             toggleTodo = todo => {
-                //console.log('toggle todo', todo)
-
-                this.props.store.dispatch(toggleTodoAction(todo.id))
+                this.props.store.dispatch(handleToggleTodo(todo))
             }
             render(){
-                console.log('todo comp', this.props)
+                //console.log('todo comp', this.props)
                 const {store, title, todos} = this.props
                 return(
                     <div>
@@ -170,24 +157,24 @@
         
         class Goals extends React.Component{
             addGoal = (e) =>{
-                //e.preventDefault()
-                console.log('add goal')
+                e.preventDefault()
+                //console.log('add goal')
 
-                const goal = {
-                    id: Math.random()*10,
-                    name: this.input.value,
-                    complete: false,
-                  }
-                  this.props.store.dispatch(
+                
+                this.props.store.dispatch( handleAddGoal(
+                        this.input.value, 
+                        () => this.input.value=''
                     
-                    addGoalAction(goal)
-                  )
+                    ))
+
+
+
             }
             removeGoal = (goal) => {
-                const {store} = this.props
-                console.log('remove goal', goal)
 
-                store.dispatch(removeGoalAction(goal.id))
+
+                store.dispatch(handleDeleteGoal(goal))
+
             }
 
             render(){

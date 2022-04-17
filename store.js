@@ -58,8 +58,88 @@ function addTodoAction (todo) {
 
   }
 
+  /** 
+   * Handling the full-stack logic
+   */  
+  
+  //Todos
+  function handleAddTodo(todoName, cb){
+
+    return (dispatch) => {
+      API.saveTodo(todoName)
+      .then(t=>{
+        dispatch(addTodoAction(t))
+        cb()
+      })
+      .catch(()=>{
+        console.log('unknpwn error')
+      })
+    }
+  }
+  function handleDeleteTodo(todo){
+    return (dispatch) => {
+      dispatch(removeTodoAction(todo.id))
+      //debugger
+      return API.deleteTodo(todo.id)
+      .catch(()=>{
+          dispatch( addTodoAction(todo) )
+          alert("error")   
+        }
+      )      
+    }
+  }
+  function handleToggleTodo(todo){
+    return(dispatch) => {
+      debugger
+      dispatch(toggleTodoAction(todo.id))
+      return API.saveTodoToggle(todo.id)
+          .catch(() =>{
+              store.dispatch(toggleTodoAction( todo.id))
+          })
+    }
+  }
+  //Goals
+  function handleAddGoal(goalName, cb){
+
+    return (dispatch) => {
+      API.saveTodo(goalName)
+      .then(t=>{
+        dispatch(addGoalAction(t))
+        cb()
+      })
+      .catch(()=>{
+        console.log('unknpwn error')
+      })
+    }
+  }
+  function handleDeleteGoal(goal){
+    return (dispatch) => {
+      dispatch(removeGoalAction(goal.id))
+      debugger
+      return API.deleteGoal(goal.id)
+      .catch(()=>{
+          dispatch( addGoalAction(goal) )
+          alert("error")   
+        }
+      )      
+    }
+  }
+// Handle Initial Data
+
+function handleInitialData(){
+  return (dispatch) =>{
+    return Promise.all([
+      API.fetchTodos(),
+      API.fetchGoals()
+  ]).then( ([todos, goals]) => {
+      dispatch(recieveDataAction(todos, goals))
+  })
+
+  }
+}
+
 function todos (state = [], action) {
-  console.log('todos reducer', action)
+  //  console.log('todos reducer', action)
   switch(action.type) {
     case ADD_TODO :
       return state.concat([action.todo])
@@ -88,12 +168,27 @@ function goals (state = [], action) {
   }
 }
 
+function loading(state = true, action){
+  switch(action.type){
+    case RECIEVE_DATA: 
+      return false
+    default:
+      return state
+  }
+}
 
 
 
 
 // Middleware functions
 
+
+const thunk = (store) => (next)=> ( action) => {
+  if(typeof(action) === 'function'){
+    return action(store.dispatch)
+  }
+  return next(action)
+}
 
 const checker = (store) => (next)=> ( action) => {
   if (action.type === ADD_TODO 
@@ -122,23 +217,25 @@ const logger = (store) => (next)=> ( action) => {
 /************************************** */
   const store = Redux.createStore(
     Redux.combineReducers({
-      todos, goals
-    }), Redux.applyMiddleware(checker)
+      todos, goals, loading
+    }), Redux.applyMiddleware(ReduxThunk.default,  checker)
   )
-  
+  // reduxthunk is used insted of my thunk middleware
   store.subscribe(() => {
     const{goals, todos} = store.getState()
 //Empty lists
-    document.getElementById('todos').innerHTML = ''
-    document.getElementById('goals').innerHTML = ''
+    // document.getElementById('todos').innerHTML = ''
+    // document.getElementById('goals').innerHTML = ''
 
     
-    goals.forEach(domGoal)
-    todos.forEach(domTodo)
+    // goals.forEach(domGoal)
+    // todos.forEach(domTodo)
   })
 
 
-
+/**
+ * 
+ 
 
 document.getElementById('addTodo').addEventListener('click', ()=>{
     const todo = {
@@ -165,7 +262,7 @@ document.getElementById('addGoal').addEventListener('click', ()=>{
     )
     document.getElementById('txtGoal').value=''
 })
-
+*/
 const removeBtn = onClick =>{
   const btn = document.createElement('button')
   btn.innerHTML = 'X'
