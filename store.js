@@ -137,6 +137,9 @@ function handleInitialData(){
 
   }
 }
+/**
+ * Reducers
+ */
 
 function todos (state = [], action) {
   //  console.log('todos reducer', action)

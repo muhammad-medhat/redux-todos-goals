@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>React - Redux</title>
+</head>
+<body>
+    <div class="root"></div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/redux/5.0.0-alpha.0/redux.js" integrity="sha512-rrwKW9q7MLeNxl6R7SHb2DjciTUBoCFCdbTwMQWdfJ1uqT22lKR5YWdbKoRuBLFGk3XoEZ7jRwWjiCGLopwW1g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
+    <script src="https://unpkg.com/react@16.3.0-alpha.1/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@16.3.0-alpha.1/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/babel-standalone@6.15.0/babel.min.js"></script>
+    <!-- <script src="https://unpkg.com/redux-thunk@2.2.0/dist/redux-thunk.min.js"></script> -->
+    <script>
+        import React from 'react';
+        import { render } from 'react-dom';
+
+        function Parent ({ name }) {
+        return (
+            <div>
+            <h1>Parent</h1>
+            <Child name={name}/>
+            </div>
+        );
+        }
+
+        function Child ({ name }) {
+        return (
+            <div>
+            <h1>Child</h1>
+            <Grandchild name={name}/>
+            </div>
+        );
+        }
+        function Grandchild ({ name }) {
+            return (
+              <Context.Consumer>
+                {(name) => (
+                    <div>
+                        <h1>Grandchild</h1>
+                        <h3>Name: {name}</h3>
+                    </div>
+                )}
+              </Context.Consumer>
+            );
+          }
+
+        class App extends React.Component {
+            render() {
+            const name = 'Tyler';
+          
+            return (
+              <Context.Provider value={name}>
+                <Parent />
+              </Context.Provider>
+              );
+            }
+          }
+
+        render(<App />, document.getElementById('root'));
+
+    </script>
+</body>
+</html>
